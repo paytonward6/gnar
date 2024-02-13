@@ -6,6 +6,10 @@ class PipeableMeta(type):
         instance = cls()
         return other | instance
 
+    def __getitem__(cls, other):
+        instance = cls()
+        return other | instance
+
 
 class Pipeable(metaclass=PipeableMeta):
     def __ror__(self, other):

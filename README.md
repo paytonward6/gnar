@@ -5,7 +5,7 @@ Shred the gnar in Python by using (half) pipes!
 
 Various shell builtins are implemented, allowing for piping commands together.
 
-`nar.Pipeable` can be implemented on an arbitrary class; this ABC only requires you to implement `Pipeable.run` that takes a single parameter.
+`gnar.Pipeable` can be implemented on an arbitrary class; this class only requires you to implement `Pipeable.run` that takes a single parameter.
 
 
 ## Examples
