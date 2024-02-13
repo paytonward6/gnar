@@ -1,18 +1,26 @@
 from .lib import (
-    ls,
     cat,
-    echo,
-    who,
-    ps,
+    cp,
     cut,
+    echo,
+    ls,
+    mv,
+    ps,
     sed,
+    shell,
+    who,
 )
+
+
 __all__ = [
-    "ls",
     "cat",
-    "echo",
-    "who",
-    "ps",
+    "cp",
     "cut",
+    "echo",
+    "ls",
+    "mv",
+    "ps",
     "sed",
+    "shell",
+    "who",
 ]

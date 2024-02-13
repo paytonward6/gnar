@@ -1,19 +1,22 @@
 import os
 import re
+import shutil
 import subprocess
+from abc import ABC, abstractmethod
 from typing import Any, Sequence
 
 
-class Pipeable:
+class Pipeable(ABC):
     def __ror__(self, other):
-        return self.operation(other)
+        return self.run(other)
 
-    def operation(self, other) -> Any:
+    @abstractmethod
+    def run(self, other) -> Any:
         ...
 
 
 class ls(Pipeable):
-    def operation(self, other) -> list[bytes] | list[str]:
+    def run(self, other) -> list[bytes] | list[str]:
         path = os.path.expanduser(other)
         return os.listdir(path)
 
@@ -30,7 +33,7 @@ class cat(Pipeable):
                 contents = contents.strip()
             return contents
 
-    def operation(self, other):
+    def run(self, other):
         if isinstance(other, str):
             return self._read_file(other)
         elif isinstance(other, list):
@@ -44,18 +47,18 @@ class cat(Pipeable):
 
 
 class echo(Pipeable):
-    def operation(self, other):
+    def run(self, other):
         print(other)
         return other
 
 
 class who(Pipeable):
-    def operation(self, _):
+    def run(self, _):
         return os.getlogin()
 
 
 class ps(Pipeable):
-    def operation(self, _):
+    def run(self, _):
         result = subprocess.run(["ps", "aux"], capture_output=True).stdout
         return result.splitlines()
 
@@ -68,7 +71,7 @@ class cut(Pipeable):
         self.field = f
         self.delim = d
 
-    def operation(self, other):
+    def run(self, other):
         split = other.split(self.delim)
 
         if isinstance(self.field, int):
@@ -82,7 +85,7 @@ class sed(Pipeable):
         self.pattern = pattern
         self.repl = repl
 
-    def operation(self, other):
+    def run(self, other):
         if isinstance(other, list):
             result = []
             for line in other:
@@ -92,3 +95,40 @@ class sed(Pipeable):
             return re.sub(self.pattern, self.repl, other)
 
 
+class shell(Pipeable):
+    def run(self, other):
+        return subprocess.run(other, capture_output=True)
+
+
+class cp(Pipeable):
+    def __init__(self, recursive=False):
+        self.recursive = recursive
+
+    def run(self, other):
+        if not (isinstance(other, list) or isinstance(other, tuple)):
+            raise ValueError("cp must be passed a list[str] or list[list[str]]")
+
+        if isinstance(other[0], list) or isinstance(other[0], tuple):
+            for pair in other:
+                src, dst = pair
+                shutil.copy(src, dst)
+        else:
+            src, dst = other
+            shutil.copy(src, dst)
+
+
+class mv(Pipeable):
+    def __init__(self, recursive=False):
+        self.recursive = recursive
+
+    def run(self, other):
+        if not (isinstance(other, list) or isinstance(other, tuple)):
+            raise ValueError("mv must be passed a list[str] or list[list[str]]")
+
+        if isinstance(other[0], list) or isinstance(other[0], tuple):
+            for pair in other:
+                src, dst = pair
+                shutil.move(src, dst)
+        else:
+            src, dst = other
+            shutil.move(src, dst)
