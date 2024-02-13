@@ -2,23 +2,28 @@ import os
 import re
 import shutil
 import subprocess
-from abc import ABC, abstractmethod
-from typing import Any, Sequence
+from typing import Sequence
 
-
-class Pipeable(ABC):
-    def __ror__(self, other):
-        return self.run(other)
-
-    @abstractmethod
-    def run(self, other) -> Any:
-        ...
+from .core import Pipeable
 
 
 class ls(Pipeable):
     def run(self, other) -> list[bytes] | list[str]:
         path = os.path.expanduser(other)
         return os.listdir(path)
+
+
+class cd(Pipeable):
+    def run(self, other):
+        current = os.getcwd()
+        path = os.path.expanduser(other)
+        os.chdir(path)
+        return current
+
+
+class pwd(Pipeable):
+    def run(self, _):
+        return os.getcwd()
 
 
 class cat(Pipeable):
@@ -52,6 +57,20 @@ class echo(Pipeable):
         return other
 
 
+class tee(Pipeable):
+    def __init__(self, filename):
+        self.filename = filename
+
+    def run(self, other):
+        with open(self.filename, "w") as f:
+            if isinstance(other, list) or isinstance(other, tuple):
+                f.writelines(map(lambda s: f"{s}\n", other))
+            else:
+                f.write(str(other))
+        print(other)
+        return other
+
+
 class who(Pipeable):
     def run(self, _):
         return os.getlogin()
@@ -81,7 +100,7 @@ class cut(Pipeable):
 
 
 class sed(Pipeable):
-    def __init__(self, pattern, repl):
+    def __init__(self, pattern, repl, file=False, in_place=False):
         self.pattern = pattern
         self.repl = repl
 
@@ -132,3 +151,5 @@ class mv(Pipeable):
         else:
             src, dst = other
             shutil.move(src, dst)
+
+
