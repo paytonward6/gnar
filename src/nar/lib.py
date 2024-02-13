@@ -1,33 +1,15 @@
 import os
 import re
 import subprocess
-from typing import Any
+from typing import Any, Sequence
 
 
 class Pipeable:
-    def __init__(self, value = None):
-        self._value = value
-
     def __ror__(self, other):
-        return self._operation(other)
+        return self.operation(other)
 
     def operation(self, other) -> Any:
         ...
-
-    def _operation(self, other):
-        if isinstance(other, Pipeable):
-            result = self.operation(other.value)
-        else:
-            result = self.operation(other)
-        return result
-
-    def __rrshift__(self, other):
-        result = self._operation(other)
-        return Pipeable(result)
-
-    @property
-    def value(self):
-        return self._value
 
 
 class ls(Pipeable):
@@ -38,7 +20,6 @@ class ls(Pipeable):
 
 class cat(Pipeable):
     def __init__(self, strip: bool = False):
-        super().__init__()
         self.strip = strip
 
     def _read_file(self, filename: str) -> str:
@@ -80,7 +61,10 @@ class ps(Pipeable):
 
 
 class cut(Pipeable):
-    def __init__(self, f: int | tuple[int, int], d=","):
+    def __init__(self, f: int | Sequence[int], d=","):
+        if not isinstance(f, int):
+            assert len(f) == 2
+
         self.field = f
         self.delim = d
 
@@ -89,8 +73,7 @@ class cut(Pipeable):
 
         if isinstance(self.field, int):
             return split[self.field - 1]
-
-        elif isinstance(self.field, tuple):
+        else:
             return split[self.field[0] - 1:self.field[1]]
 
 
