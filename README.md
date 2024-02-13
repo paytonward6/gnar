@@ -1,4 +1,4 @@
-# nar
+# gnar
 
 Blend of shell and Python via a lib.
 
