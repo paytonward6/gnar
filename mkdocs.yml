@@ -1,0 +1,5 @@
+site_name: gnar
+site_url: https://gnar.readthedocs.io
+nav:
+  - Home: index.md
+theme: readthedocs
