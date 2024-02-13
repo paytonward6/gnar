@@ -55,6 +55,8 @@ class cat(Pipeable):
         elif isinstance(other, list):
             results = []
             for filename in other:
+                if os.path.isdir(filename):
+                    continue
                 contents = self._read_file(filename)
                 results.append(contents)
             return results
