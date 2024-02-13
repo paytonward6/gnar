@@ -32,7 +32,8 @@ class Pipeable:
 
 class ls(Pipeable):
     def operation(self, other) -> list[bytes] | list[str]:
-        return os.listdir(other)
+        path = os.path.expanduser(other)
+        return os.listdir(path)
 
 
 class cat(Pipeable):
@@ -40,12 +41,23 @@ class cat(Pipeable):
         super().__init__()
         self.strip = strip
 
-    def operation(self, other) -> str:
-        with open(other, "r") as f:
+    def _read_file(self, filename: str) -> str:
+        path = os.path.expanduser(filename)
+        with open(path, "r") as f:
             contents = f.read()
             if self.strip:
                 contents = contents.strip()
             return contents
+
+    def operation(self, other):
+        if isinstance(other, str):
+            return self._read_file(other)
+        elif isinstance(other, list):
+            results = []
+            for filename in other:
+                contents = self._read_file(filename)
+                results.append(contents)
+            return results
 
 
 class echo(Pipeable):
@@ -55,12 +67,12 @@ class echo(Pipeable):
 
 
 class who(Pipeable):
-    def operation(self, other):
+    def operation(self, _):
         return os.getlogin()
 
 
 class ps(Pipeable):
-    def operation(self, other):
+    def operation(self, _):
         result = subprocess.run(["ps", "aux"], capture_output=True).stdout
         return result.splitlines()
 
@@ -95,9 +107,3 @@ class sed(Pipeable):
             return re.sub(self.pattern, self.repl, other)
 
 
-def _main():
-    print(["this:that:other", "this"] | sed(r"(this|other)", r"shum"))
-
-
-if __name__ == "__main__":
-    _main()
