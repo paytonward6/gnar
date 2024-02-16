@@ -2,4 +2,13 @@ site_name: gnar
 site_url: https://gnar.readthedocs.io
 nav:
   - Home: index.md
-theme: readthedocs
+  - Get Started: get_started.md
+  - API:
+    - Shell: api/shell.md
+    - Builtins:
+      - Str: api/builtins/str.md
+theme: material
+
+plugins:
+- search
+- mkdocstrings

@@ -1,4 +1,4 @@
-from .lib import (
+from .shell import (
     cat,
     cd,
     cp,

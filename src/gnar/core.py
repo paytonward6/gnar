@@ -19,5 +19,8 @@ class Pipeable(metaclass=PipeableMeta):
     def run(self, other) -> Any:
         ...
 
-    def _(self, other):
-        return self.run(other)
+
+class IgnorablePipeable(Pipeable):
+    @property
+    def _(self):
+        return self.run(None)
